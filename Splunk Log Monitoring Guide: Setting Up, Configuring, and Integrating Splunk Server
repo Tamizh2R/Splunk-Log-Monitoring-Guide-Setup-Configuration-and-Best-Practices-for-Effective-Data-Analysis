@@ -1,0 +1,91 @@
+
+Absolutely, let's provide a step-by-step guide for setting up Splunk Master and Forwarder servers using Amazon EC2 instances running Linux in AWS:
+
+---
+
+## Setting Up Splunk Master and Forwarder Servers on EC2 (Linux) in AWS
+
+### 1. Launch EC2 Instances
+
+1. **Splunk Master Server**:
+   - Launch an EC2 instance with your preferred Linux distribution (e.g., Amazon Linux 2 or Ubuntu).
+   - Choose an appropriate instance type, configure security groups to allow port 8000 (Splunk web interface) and 9997 (forwarding port).
+   - Associate an Elastic IP for a static IP address.
+
+2. **Splunk Forwarder Server**:
+   - Launch another EC2 instance with the same Linux distribution.
+   - Configure security groups to allow port 9997 (for communication with Master) and 22 (SSH).
+
+### 2. Install and Configure Splunk Master Server
+
+1. **SSH Into Master Server**:
+   - Use the private key associated with your EC2 instance to SSH into the Master Server.
+
+2. **Download Splunk Package**:
+   - Download the Splunk Enterprise package for Linux:
+     ```
+     wget -O splunk-8.2.3-cd0848707637-Linux-x86_64.tgz 'https://download.splunk.com/products/splunk/releases/8.2.3/linux/splunk-8.2.3-cd0848707637-Linux-x86_64.tgz'
+     ```
+
+3. **Install Splunk**:
+   - Extract the package: `tar -xvzf splunk-8.2.3-cd0848707637-Linux-x86_64.tgz`
+   - Start Splunk: `./splunk start`
+   - Follow the prompts to set admin credentials.
+
+4. **Access Splunk Web Interface**:
+   - Open a browser and access `http://<Master-Public-IP>:8000` to access the Splunk web interface.
+
+### 3. Install and Configure Splunk Forwarder Server
+
+1. **SSH Into Forwarder Server**:
+   - Use SSH to access the Forwarder Server.
+
+2. **Download Splunk Forwarder Package**:
+   - Download the Splunk Universal Forwarder package for Linux:
+     ```
+     wget -O splunkforwarder-8.2.3-cd0848707637-Linux-x86_64.tgz 'https://download.splunk.com/products/universalforwarder/releases/8.2.3/linux/splunkforwarder-8.2.3-cd0848707637-Linux-x86_64.tgz'
+     ```
+
+3. **Install Splunk Forwarder**:
+   - Extract the package: `tar -xvzf splunkforwarder-8.2.3-cd0848707637-Linux-x86_64.tgz`
+   - Start the Forwarder: `./splunk start --accept-license`
+   - Set user-defined credentials when prompted.
+
+### 4. Configure Forwarding on Forwarder Server
+
+1. **Configure Forwarding**:
+   - Navigate to `/opt/splunkforwarder/bin`.
+   - Add Master's IP as a forward-server:
+     ```
+     ./splunk add forward-server <Master-IP>:9997
+     ```
+
+2. **Supply Credentials**:
+   - Supply the username and password created on the Master Server.
+
+### 5. Testing and Integration
+
+1. **Testing with Sample Log**:
+   - Download a sample log file:
+     ```
+     wget https://github.com/elastic/examples/blob/master/Common%20Data%20Formats/apache_logs/apache_logs
+     ```
+   - Upload the log file to `/home/ec2-user` on the Forwarder Server using `scp` or `winscp`.
+
+2. **Monitor Log File**:
+   - Inside `/opt/splunkforwarder/bin`, use `./splunk add monitor` to monitor the uploaded log file.
+
+### 6. Master Forwarding Configuration
+
+1. **Enable Port Listening on Master**:
+   - On the Master Server, enable listening on port 9997:
+     ```
+     ./splunk enable listen 9997
+     ```
+
+### Congratulations! You've Set Up Splunk Master and Forwarder Servers on EC2 Instances in AWS.
+
+---
+
+By following these detailed steps, users can create and configure Splunk Master and Forwarder servers using Amazon EC2 instances running Linux. This guide ensures that users can achieve successful integration, log monitoring, and efficient data forwarding between the servers.
+
